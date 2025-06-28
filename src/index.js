@@ -20,4 +20,4 @@ mongoose
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/interview", require("./routes/interviewRoutes"));
+app.use("/api/interviews", require("./routes/interviewRoutes"));

@@ -49,4 +49,56 @@ const createInterview = async (req, res) => {
   }
 };
 
-module.exports = { createInterview };
+const getInterviews = async (req, res) => {
+  try {
+    const interviews = await Interview.find({ userId: req.user.id });
+    res.json({ success: true, interviews });
+  } catch (error) {
+    console.error("Error fetching interviews:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getInterview = async (req, res) => {
+  try {
+    const interviewId = req.params.id;
+    const userId = req.user.id;
+
+    const interview = await Interview.findOne({
+      _id: interviewId,
+      userId: userId,
+    });
+
+    if (!interview) {
+      return res.status(404).json({ message: "Interview not found" });
+    }
+
+    res.json({ success: true, interview });
+  } catch (error) {
+    console.error("Error fetching interview:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const deleteInterview = async (req, res) => {
+  try {
+    const interviewId = req.params.id;
+    const userId = req.user.id;
+
+    const interview = await Interview.findOneAndDelete({
+      _id: interviewId,
+      userId: userId,
+    });
+
+    if (!interview) {
+      return res.status(404).json({ message: "Interview not found" });
+    }
+
+    res.json({ success: true, message: "Interview deleted" });
+  } catch (error) {
+    console.error("Error deleting interview:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { createInterview, getInterviews, getInterview, deleteInterview };
