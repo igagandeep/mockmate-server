@@ -1,11 +1,21 @@
+
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require("cors");
 const mongoose = require("mongoose");
 const app = express();
 dotenv.config();
 
 // Middleware
 app.use(express.json());
+
+// Allow requests from your frontend
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    credentials: true, // Only needed if you use cookies
+  })
+);
 
 mongoose
   .connect(process.env.MONGO_URI)
