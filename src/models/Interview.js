@@ -39,7 +39,18 @@ const interviewSchema = new mongoose.Schema(
     questions: [questionSchema],
     transcript: [transcriptTurnSchema],
     feedback: {
-      type: String,
+      totalScore: Number,
+      categoryScores: {
+        communication: Number,
+        technicalKnowledge: Number,
+        problemSolving: Number,
+        culturalFit: Number,
+        confidence: Number,
+      },
+      strengths: String,
+      areasForImprovement: String,
+      finalAssessment: String,
+      createdAt: Date,
     },
     status: {
       type: String,
