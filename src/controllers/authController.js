@@ -18,7 +18,10 @@ const registerUser = async (req, res) => {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    res.status(201).json({ token });
+    res.status(201).json({
+      success: true,
+      message: "Account created successfully. Please sign in.",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
