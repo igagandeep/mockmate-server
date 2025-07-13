@@ -26,12 +26,6 @@ const createInterview = async (req, res) => {
     let questions = JSON.parse(match[0]);
     questions = questions.slice(0, numQuestions);
 
-    // Format for schema
-    const formattedQuestions = questions.map((q) => ({
-      q,
-      generatedAt: new Date(),
-    }));
-
     // Create interview in MongoDB
     const interview = await Interview.create({
       userId,
@@ -39,7 +33,7 @@ const createInterview = async (req, res) => {
       experienceLevel,
       interviewType,
       numQuestions,
-      questions: formattedQuestions,
+      questions,
       status: "ready",
     });
 
@@ -145,13 +139,13 @@ const saveTranscript = async (req, res) => {
 
 const feedbackSchema = z.object({
   totalScore: z.number(),
-  categoryScores: z.object({
-    communication: z.number(),
-    technicalKnowledge: z.number(),
-    problemSolving: z.number(),
-    culturalFit: z.number(),
-    confidence: z.number(),
-  }),
+  categoryScores: z.array(
+    z.object({
+      name: z.string(),
+      score: z.number(),
+      comment: z.string(),
+    })
+  ),
   strengths: z.string(),
   areasForImprovement: z.string(),
   finalAssessment: z.string(),
@@ -189,24 +183,19 @@ const generateFeedback = async (req, res) => {
     } = await generateObject({
       model: google("gemini-1.5-flash"),
       schema: feedbackSchema,
-      prompt: `
-You are an AI interviewer analyzing a mock interview transcript. Evaluate the candidate and provide detailed feedback.
+      prompt: `You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
+        Transcript:
+        ${formattedTranscript}
 
-Transcript:
-${formattedTranscript}
-
-Provide:
-- totalScore (0-100)
-- categoryScores for:
-  - communication
-  - technicalKnowledge
-  - problemSolving
-  - culturalFit
-  - confidence
-- strengths
-- areasForImprovement
-- finalAssessment
-`,
+        Please score the candidate from 0 to 100 in the following areas. Do not add categories other than the ones provided:
+        - **Communication Skills**: Clarity, articulation, structured responses.
+        - **Technical Knowledge**: Understanding of key concepts for the role.
+        - **Problem-Solving**: Ability to analyze problems and propose solutions.
+        - **Cultural & Role Fit**: Alignment with company values and job role.
+        - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
+        `,
+      system:
+        "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
     });
 
     // 4. Save feedback in Interview
@@ -219,11 +208,34 @@ Provide:
       createdAt: new Date(),
     };
 
+    interview.finalized = true;
+
     await interview.save();
 
     res.json({ success: true, feedback: interview.feedback });
   } catch (error) {
     console.error("Error generating feedback:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getFeedbackByInterviewId = async (req, res) => {
+  try {
+    const interviewId = req.params.id;
+    const userId = req.user.id;
+
+    const interview = await Interview.findOne({ _id: interviewId, userId });
+    if (!interview) {
+      return res.status(404).json({ message: "Interview not found" });
+    }
+
+    res.json({
+      success: true,
+      feedback: interview.feedback,
+      finalized: interview.finalized,
+    });
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -235,4 +247,5 @@ module.exports = {
   deleteInterview,
   saveTranscript,
   generateFeedback,
+  getFeedbackByInterviewId,
 };

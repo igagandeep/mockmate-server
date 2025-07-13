@@ -44,7 +44,10 @@ const loginUser = async (req, res) => {
     });
     res
       .status(200)
-      .json({ token, user: { name: user.name, email: user.email } });
+      .json({
+        token,
+        user: { name: user.name, email: user.email, id: user._id },
+      });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

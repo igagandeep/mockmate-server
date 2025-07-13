@@ -1,14 +1,24 @@
 const mongoose = require("mongoose");
 
-const questionSchema = new mongoose.Schema({
-  q: String,
-  generatedAt: Date,
-});
-
 const transcriptTurnSchema = new mongoose.Schema({
-  speaker: { type: String, enum: ["user", "ai"] },
+  speaker: { type: String, enum: ["user", "assistant"] },
   text: String,
   timestamp: { type: Date, default: Date.now },
+});
+
+const categoryScoreSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  score: {
+    type: Number,
+    required: true,
+  },
+  comment: {
+    type: String,
+    required: true,
+  },
 });
 
 const interviewSchema = new mongoose.Schema(
@@ -36,26 +46,22 @@ const interviewSchema = new mongoose.Schema(
       type: Number,
       default: 3,
     },
-    questions: [questionSchema],
+    questions: [{ type: String }],
     transcript: [transcriptTurnSchema],
     feedback: {
       totalScore: Number,
       categoryScores: {
-        communication: Number,
-        technicalKnowledge: Number,
-        problemSolving: Number,
-        culturalFit: Number,
-        confidence: Number,
+        type: [categoryScoreSchema],
+        default: [],
       },
       strengths: String,
       areasForImprovement: String,
       finalAssessment: String,
       createdAt: Date,
     },
-    status: {
-      type: String,
-      enum: ["pending", "ready", "in-progress", "completed"],
-      default: "pending",
+    finalized: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
