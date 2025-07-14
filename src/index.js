@@ -11,7 +11,7 @@ app.use(express.json());
 // Allow requests from your frontend
 app.use(
   cors({
-    origin: ["https://mock-mate-six.vercel.app/"],
+    origin: ["https://mock-mate-six.vercel.app", "http://localhost:3000"],
     credentials: true, // Only needed if you use cookies
   })
 );
