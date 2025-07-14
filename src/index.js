@@ -1,4 +1,3 @@
-
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -12,7 +11,7 @@ app.use(express.json());
 // Allow requests from your frontend
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["https://mock-mate-six.vercel.app/"],
     credentials: true, // Only needed if you use cookies
   })
 );
